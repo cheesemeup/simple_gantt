@@ -6,8 +6,9 @@
 The intended resolution is in months, to provide a rough outline for work packages in multi-year projects
 """
 
-import matplotlib.pyplot as plt
 import json
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 
 def simple_gantt():
     """Driver for creating a simple Gantt chart
@@ -53,23 +54,31 @@ def make_chart(config: dict):
     fig = plt.figure()
 
     # zoom based on the number of tasks and months
-    plt.xlim = ([0,full_duration])
-    plt.ylim = ([0,len(config["work_packages"])+1])
+    ax = plt.gca()
+    ax.set_xlim([0,full_duration])
+    ax.set_ylim([0,len(config["work_packages"])+1])
 
     # title and axis labels
-   #  plt.title(config.figure_title)
+    plt.title(config["figure_title"])
 
     # create axis labels, note that order is inverted
     ytick_positions, ytick_labels = generate_yticks(len(config["work_packages"]))
-    plt.yticks = (ytick_positions, ytick_labels)
+    ax.set_yticks(ytick_positions, ytick_labels)
     xtick_position, xtick_label = generate_xticks(full_duration, config["temporal_resolution"])
-    plt.xticks = (xtick_position, xtick_label)
+    ax.set_xticks(xtick_position, xtick_label)
 
 
     # create boxes, note that the order is inverted, with WP 1 being at the top
-
-
+    for i in range(len(config["work_packages"])):
+        ax.add_patch(patches.Rectangle(
+            [config["work_packages"][i][0],ytick_positions[i]-0.5],
+            config["work_packages"][i][1]-config["work_packages"][i][0],
+            1,
+            color=config["box_color"]
+        ))
+###
     # save figure
+    plt.show()
     plt.savefig(f"out/{config['figure_filename']}")
     plt.close()
 
