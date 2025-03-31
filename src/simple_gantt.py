@@ -48,36 +48,48 @@ def make_chart(config: dict):
         config (dict): Configuration for the Gantt chart
     """
     # full duration of the project
-    full_duration = max(max(config["work_packages"]))
+    full_duration = max(max(config["task_timespans"]))
 
-    # open figure
-    fig = plt.figure()
+    # open figure with settings
+    fig = plt.figure(figsize=(18,8))
 
     # zoom based on the number of tasks and months
     ax = plt.gca()
     ax.set_xlim([0,full_duration])
-    ax.set_ylim([0,len(config["work_packages"])+1])
+    ax.set_ylim([0.5,len(config["tasks"])+0.5])
 
     # title and axis labels
-    plt.title(config["figure_title"])
+    plt.title(config["figure_title"], fontsize=20)
+    plt.xlabel('Month', fontsize=14)
 
     # create axis labels, note that order is inverted
-    ytick_positions, ytick_labels = generate_yticks(len(config["work_packages"]))
-    ax.set_yticks(ytick_positions, ytick_labels)
+    ytick_positions, ytick_labels = generate_yticks(config["tasks"])
+    ax.set_yticks(ytick_positions, ytick_labels, fontsize=16)
     xtick_position, xtick_label = generate_xticks(full_duration, config["temporal_resolution"])
-    ax.set_xticks(xtick_position, xtick_label)
+    ax.set_xticks(xtick_position, xtick_label, fontsize=14)
 
 
     # create boxes, note that the order is inverted, with WP 1 being at the top
-    for i in range(len(config["work_packages"])):
+    for i in range(len(config["tasks"])):
         ax.add_patch(patches.Rectangle(
-            [config["work_packages"][i][0],ytick_positions[i]-0.5],
-            config["work_packages"][i][1]-config["work_packages"][i][0],
+            [config["task_timespans"][i][0],ytick_positions[i]-0.5],
+            config["task_timespans"][i][1]-config["task_timespans"][i][0],
             1,
-            color=config["box_color"]
+            color=config["box_color"][i]
         ))
-###
+
+    # legend
+    unique_colors = []
+    for color in config["box_color"]:
+        if not color in unique_colors:
+            unique_colors.append(color)
+    n_colors = len(unique_colors)
+    for wp in range(n_colors):
+        ax.add_patch(patches.Rectangle((-1,-1),0,0,color=unique_colors[wp],label=f"WP {wp+1}"))
+    plt.legend(loc="upper right", fontsize=14)
+
     # save figure
+    fig.tight_layout()
     plt.show()
     plt.savefig(f"out/{config['figure_filename']}")
     plt.close()
@@ -86,21 +98,21 @@ def make_chart(config: dict):
     print(f"figure saved as out/{config['figure_filename']}")
 
 
-def generate_yticks(n_work_packages: int) -> [list[float], list[str]]:
+def generate_yticks(tasks: list[str]) -> [list[float], list[str]]:
     """Generate the ytick locations and labels for the chart
 
     Args:
-        n_work_packages (int): The number of work packages
+        tasks (list[str]): The list of tasks
 
     Returns:
         ytick_positions (list[float]): The y positions of the ticks
         ytick_labels (list[str]): The tick labels
     """
     ytick_positions, ytick_labels = [], []
-    # for loop, reversing the order of work packages to have WP 1 at the top of the chart
-    for i in range(n_work_packages):
-        ytick_positions.append(n_work_packages-i)
-        ytick_labels.append(f"WP {i+1}")
+    # for loop, reversing the order of tasks to have task 1 at the top of the chart
+    for i in range(len(tasks)):
+        ytick_positions.append(len(tasks)-i)
+        ytick_labels.append(f"{tasks[i]}")
 
     # log
     print(f"ytick positions: {ytick_positions}")
