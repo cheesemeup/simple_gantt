@@ -10,7 +10,8 @@ cat << EOF > simple_gantt_config.cnf
 {
     "work_packages":[[0,15],[15,27],[27,36]],
     "figure_title":"Project Timeline",
-    "figure_filename":"timeline_gantt.png"
+    "figure_filename":"timeline_gantt.png",
+    "temporal_resolution":3
 }
 EOF
 

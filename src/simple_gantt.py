@@ -18,10 +18,10 @@ def simple_gantt():
     config = get_config()
 
     # make chart
-#    make_chart(config)
+    make_chart(config)
 
 
-def get_config():
+def get_config() -> dict:
     """Get the config for the Gantt chart specified in the runscript
 
     Returns:
@@ -46,24 +46,27 @@ def make_chart(config: dict):
     Args:
         config (dict): Configuration for the Gantt chart
     """
+    # full duration of the project
+    full_duration = max(max(config["work_packages"]))
+
     # open figure
     fig = plt.figure()
 
     # zoom based on the number of tasks and months
-    # plt.xlim = ([0,max(max(config.work_packages))])
-    # plt.ylim = ([0.5,len(config.work_packages)+0.5])
+    plt.xlim = ([0,full_duration])
+    plt.ylim = ([0,len(config["work_packages"])+1])
 
-    # title
-    # plt.title(config.figure_title)
+    # title and axis labels
+   #  plt.title(config.figure_title)
 
     # create axis labels, note that order is inverted
-    # ytick_position, ytick_label = generate_yticks()
-    # plt.yticks = (ytick_position, ytick_label)
-    # xtick_position, xtick_label = generate_xticks()
-    # plt.xticks = (xtick_position, xtick_label)
+    ytick_positions, ytick_labels = generate_yticks(len(config["work_packages"]))
+    plt.yticks = (ytick_positions, ytick_labels)
+    xtick_position, xtick_label = generate_xticks(full_duration, config["temporal_resolution"])
+    plt.xticks = (xtick_position, xtick_label)
 
 
-    # create boxes, note that order is inverted
+    # create boxes, note that the order is inverted, with WP 1 being at the top
 
 
     # save figure
@@ -74,12 +77,52 @@ def make_chart(config: dict):
     print(f"figure saved as out/{config['figure_filename']}")
 
 
-def generate_yticks():
-    pass
+def generate_yticks(n_work_packages: int) -> [list[float], list[str]]:
+    """Generate the ytick locations and labels for the chart
 
+    Args:
+        n_work_packages (int): The number of work packages
 
-def generate_xticks():
-    pass
+    Returns:
+        ytick_positions (list[float]): The y positions of the ticks
+        ytick_labels (list[str]): The tick labels
+    """
+    ytick_positions, ytick_labels = [], []
+    # for loop, reversing the order of work packages to have WP 1 at the top of the chart
+    for i in range(n_work_packages):
+        ytick_positions.append(n_work_packages-i)
+        ytick_labels.append(f"WP {i+1}")
+
+    # log
+    print(f"ytick positions: {ytick_positions}")
+    print(f"ytick labels: {ytick_labels}")
+
+    return ytick_positions, ytick_labels
+
+def generate_xticks(full_duration: int, temporal_resolution: int) -> [list[float], list[str]]:
+    """Generate the xtick locations and labels for the chart
+
+    Args:
+        full_duration (int): Full duration of the project, in months
+        temporal_resolution (int): The temporal resolution of the ticks
+
+    Returns:
+        xtick_positions (list[float]): The x positions of the ticks
+        xtick_labels (list{str}): The tick labels
+    """
+    # initialize empty lists
+    xtick_positions, xtick_labels = [], []
+
+    # for loop to add tick information to lists
+    for i in range(0,full_duration+1,temporal_resolution):
+        xtick_positions.append(i)
+        xtick_labels.append(f"{i}")
+
+    # log
+    print(f"xtick positions: {xtick_positions}")
+    print(f"xtick labels: {xtick_labels}")
+
+    return xtick_positions, xtick_labels
 
 
 if __name__ == "__main__":
