@@ -59,14 +59,14 @@ def make_chart(config: dict):
     ax.set_ylim([0.5,len(config["tasks"])+0.5])
 
     # title and axis labels
-    plt.title(config["figure_title"], fontsize=20)
-    plt.xlabel('Month', fontsize=14)
+    plt.title(config["figure_title"], fontsize=24)
+    plt.xlabel('Month', fontsize=24)
 
     # create axis labels, note that order is inverted
     ytick_positions, ytick_labels = generate_yticks(config["tasks"])
-    ax.set_yticks(ytick_positions, ytick_labels, fontsize=16)
+    ax.set_yticks(ytick_positions, ytick_labels, fontsize=24)
     xtick_position, xtick_label = generate_xticks(full_duration, config["temporal_resolution"])
-    ax.set_xticks(xtick_position, xtick_label, fontsize=14)
+    ax.set_xticks(xtick_position, xtick_label, fontsize=24)
 
 
     # create boxes, note that the order is inverted, with WP 1 being at the top
@@ -86,12 +86,27 @@ def make_chart(config: dict):
     n_colors = len(unique_colors)
     for wp in range(n_colors):
         ax.add_patch(patches.Rectangle((-1,-1),0,0,color=unique_colors[wp],label=f"WP {wp+1}"))
-    plt.legend(loc="upper right", fontsize=14)
+    plt.legend(loc="upper right", fontsize=24, framealpha=1)
+
+    # vertical lines
+    for segment in range(0,full_duration,config["temporal_resolution"]):
+        if segment%12 == 0:
+            linestyle = '-'
+            linewidth=3
+        else:
+            linestyle = '--'
+            linewidth=1
+        plt.plot([segment,segment],[0.5,len(config["tasks"])+0.5],linestyle=linestyle,linewidth=linewidth,c='k')
+
+    # horizontal lines
+    for task in range(len(config["tasks"])):
+        plt.plot([0,full_duration],[task+0.5,task+0.5],c='k')
+
 
     # save figure
     fig.tight_layout()
     plt.show()
-    plt.savefig(f"out/{config['figure_filename']}")
+    fig.savefig(f"out/{config['figure_filename']}")
     plt.close()
 
     # log
